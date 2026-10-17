@@ -1,0 +1,28 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-[#090D16] text-slate-100 antialiased selection:bg-rose-500 selection:text-white;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    box-shadow: 0 0 15px rgba(225, 29, 72, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 35px rgba(225, 29, 72, 0.85);
+  }
+}
+
+.emergency-pulse {
+  animation: pulseGlow 2s infinite ease-in-out;
+}
+
+/* Tactical Dark Map Filter for OpenStreetMap tiles without API key */
+.dark-tactical-map .leaflet-tile-pane {
+  filter: brightness(0.65) invert(1) contrast(2.2) hue-rotate(195deg) saturate(0.35) brightness(0.8);
+}

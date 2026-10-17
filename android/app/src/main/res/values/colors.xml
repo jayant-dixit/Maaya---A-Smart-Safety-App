@@ -1,0 +1,10 @@
+<resources>
+    <color name="primary">#E11D48</color>
+    <color name="primary_variant">#BE123C</color>
+    <color name="on_primary">#FFFFFF</color>
+    <color name="secondary">#0F172A</color>
+    <color name="background">#090D16</color>
+    <color name="surface">#131B2E</color>
+    <color name="emergency_red">#EF4444</color>
+    <color name="safe_green">#10B981</color>
+</resources>

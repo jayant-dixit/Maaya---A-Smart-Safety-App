@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Maaya</string>
+    <string name="emergency_sos_title">Maaya Emergency Response Active</string>
+    <string name="emergency_sos_desc">Transmitting live location and incident data to trusted contacts</string>
+    <string name="ble_service_title">Maaya Smartwatch Monitor</string>
+    <string name="ble_service_desc">Connected to wearable for real-time safety monitoring</string>
+</resources>
