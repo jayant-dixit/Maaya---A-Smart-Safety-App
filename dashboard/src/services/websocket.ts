@@ -1,3 +1,5 @@
+import { BACKEND_URL } from './api';
+
 export type WebSocketHandler = (event: { type: string; data: any }) => void;
 
 export class EmergencyWsClient {
@@ -8,8 +10,9 @@ export class EmergencyWsClient {
   private reconnectAttempts = 0;
 
   constructor(incidentId: string, token: string, onMessage: WebSocketHandler) {
-    const host = (typeof window !== 'undefined' && window.location.hostname) ? window.location.hostname : 'localhost';
-    this.url = `ws://${host}:8088/ws/emergency?incidentId=${encodeURIComponent(incidentId)}&token=${encodeURIComponent(token)}`;
+    const wsProto = BACKEND_URL.startsWith('https') ? 'wss' : 'ws';
+    const cleanHost = BACKEND_URL.replace(/^https?:\/\//, '').replace(/\/+$/, '');
+    this.url = `${wsProto}://${cleanHost}/ws/emergency?incidentId=${encodeURIComponent(incidentId)}&token=${encodeURIComponent(token)}`;
     this.onMessageCallback = onMessage;
     this.connect();
   }

@@ -20,6 +20,10 @@ class ResilientNetworkInterceptor(
         val originalHttpUrl = originalRequest.url
 
         val currentBaseUrlStr = getActiveBaseUrl().trimEnd('/')
+        if (currentBaseUrlStr.startsWith("https://")) {
+            return chain.proceed(originalRequest)
+        }
+
         val fallbackBaseUrlStr = if (currentBaseUrlStr.contains("127.0.0.1") || currentBaseUrlStr.contains("localhost")) {
             "http://192.168.29.112:8088"
         } else {

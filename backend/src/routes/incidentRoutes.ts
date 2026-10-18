@@ -12,7 +12,8 @@ export const inMemoryLocations = new Map<string, any[]>();
 
 export function createIncidentRouter(wsServer: EmergencyWsServer) {
   const router = Router();
-  const dashboardBaseUrl = process.env.DASHBOARD_URL || 'http://192.168.29.112:5173';
+  const dashboardBaseUrl = process.env.DASHBOARD_URL ||
+    (process.env.NODE_ENV === 'production' ? 'https://maaya-henna.vercel.app' : 'http://192.168.29.112:5173');
 
   // 1. Create emergency incident
   router.post('/', async (req: Request, res: Response): Promise<any> => {

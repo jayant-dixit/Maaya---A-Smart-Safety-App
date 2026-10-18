@@ -26,8 +26,17 @@ export interface IncidentData {
   }>;
 }
 
+export const BACKEND_URL: string =
+  ((import.meta as any).env?.VITE_BACKEND_URL as string) ||
+  (typeof window !== 'undefined' &&
+   window.location.hostname !== 'localhost' &&
+   window.location.hostname !== '127.0.0.1' &&
+   !window.location.hostname.startsWith('192.168.')
+    ? 'https://maaya-nrba.onrender.com'
+    : `http://${(typeof window !== 'undefined' && window.location.hostname) ? window.location.hostname : 'localhost'}:8088`);
+
 export const host = (typeof window !== 'undefined' && window.location.hostname) ? window.location.hostname : 'localhost';
-const API_BASE = `http://${host}:8088/api`;
+export const API_BASE = `${BACKEND_URL.replace(/\/+$/, '')}/api`;
 
 export async function fetchIncident(incidentId: string, token: string): Promise<IncidentData> {
   const res = await fetch(`${API_BASE}/incidents/${incidentId}?token=${encodeURIComponent(token)}`);

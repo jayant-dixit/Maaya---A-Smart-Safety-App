@@ -93,7 +93,8 @@ class RealEmergencyMediaProvider(
         }
 
         val baseUrl = backendBaseUrlProvider().trimEnd('/')
-        val viewerUrl = baseUrl.replace(":8088", ":5173") + "/emergency/$sessionId?token=$authKey"
+        val dashboardBase = if (baseUrl.contains("onrender.com")) "https://maaya-henna.vercel.app" else baseUrl.replace(":8088", ":5173")
+        val viewerUrl = "$dashboardBase/emergency/$sessionId?token=$authKey"
 
         val sessionInfo = MediaSessionInfo(
             sessionId = sessionId,

@@ -67,9 +67,9 @@ class DefaultAppContainer(private val context: Context) : AppContainer {
         OkHttpClient.Builder()
             .addInterceptor(resilientInterceptor)
             .addInterceptor(logging)
-            .connectTimeout(4, TimeUnit.SECONDS)
-            .readTimeout(10, TimeUnit.SECONDS)
-            .writeTimeout(10, TimeUnit.SECONDS)
+            .connectTimeout(30, TimeUnit.SECONDS)
+            .readTimeout(30, TimeUnit.SECONDS)
+            .writeTimeout(30, TimeUnit.SECONDS)
             .retryOnConnectionFailure(true)
             .build()
     }

@@ -12,7 +12,7 @@ import {
   Route,
   ExternalLink
 } from 'lucide-react';
-import { host } from '../services/api';
+import { host, BACKEND_URL } from '../services/api';
 
 interface Props {
   incidentId: string;
@@ -46,7 +46,7 @@ export const EmergencyTimeline: React.FC<Props> = ({
   };
 
   const fullRecordingUrl = recordingUrl
-    ? (recordingUrl.startsWith('http') ? recordingUrl : `http://${host}:8088${recordingUrl}`)
+    ? (recordingUrl.startsWith('http') ? recordingUrl : `${BACKEND_URL.replace(/\/+$/, '')}${recordingUrl}`)
     : null;
 
   // Export full forensic evidence package

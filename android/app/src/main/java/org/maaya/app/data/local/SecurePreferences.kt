@@ -51,6 +51,19 @@ class SecurePreferences(context: Context) {
         }
         set(value) = prefs.edit().putString(KEY_BACKEND_URL, value).apply()
 
+    var dashboardBaseUrl: String
+        get() {
+            val stored = prefs.getString(KEY_DASHBOARD_URL, null)
+            if (!stored.isNullOrBlank()) return stored
+            val backend = backendBaseUrl
+            return if (backend.contains("onrender.com")) {
+                "https://maaya-henna.vercel.app"
+            } else {
+                backend.replace(":8088", ":5173").replace(":8080", ":5173")
+            }
+        }
+        set(value) = prefs.edit().putString(KEY_DASHBOARD_URL, value).apply()
+
     var shakeSensitivityThreshold: Float
         get() = prefs.getFloat(KEY_SHAKE_SENSITIVITY, 2.7f)
         set(value) = prefs.edit().putFloat(KEY_SHAKE_SENSITIVITY, value).apply()
@@ -81,6 +94,7 @@ class SecurePreferences(context: Context) {
         private const val KEY_USER_PHONE = "user_phone"
         private const val KEY_SAFETY_PIN = "safety_pin"
         private const val KEY_BACKEND_URL = "backend_url"
+        private const val KEY_DASHBOARD_URL = "dashboard_url"
         private const val KEY_SHAKE_SENSITIVITY = "shake_sensitivity"
         private const val KEY_SHAKE_ENABLED = "shake_enabled"
         private const val KEY_BATTERY_ALERT_ENABLED = "battery_alert_enabled"

@@ -14,7 +14,7 @@ import {
   CheckCircle2,
   Film
 } from 'lucide-react';
-import { host } from '../services/api';
+import { host, BACKEND_URL } from '../services/api';
 
 interface Props {
   sessionId: string;
@@ -56,7 +56,7 @@ export const VideoPlayer: React.FC<Props> = ({
   }, []);
 
   const fullRecordingUrl = recordingUrl
-    ? (recordingUrl.startsWith('http') ? recordingUrl : `http://${host}:8088${recordingUrl}`)
+    ? (recordingUrl.startsWith('http') ? recordingUrl : `${BACKEND_URL.replace(/\/+$/, '')}${recordingUrl}`)
     : null;
 
   // Auto-play live audio as soon as recording chunks are available (during ACTIVE mode)

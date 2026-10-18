@@ -128,9 +128,7 @@ class EmergencySosEngine(
             launch {
                 try {
                     val priorityContacts = contactRepository.getPrioritySmsContacts()
-                    val dashboardBaseUrl = securePreferences.backendBaseUrl
-                        .replace(":8088", ":5173")
-                        .replace(":8080", ":5173")
+                    val dashboardBaseUrl = securePreferences.dashboardBaseUrl
                     val emergencyUrl = "$dashboardBaseUrl/emergency/$incidentId?incidentId=$incidentId"
                     val result = smsDispatcher.dispatchEmergencySms(
                         contacts = priorityContacts,

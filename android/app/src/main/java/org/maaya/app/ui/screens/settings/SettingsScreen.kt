@@ -34,6 +34,7 @@ fun SettingsScreen(
     var isBatteryAlertEnabled by remember { mutableStateOf(securePreferences.isLowBatteryEscalationEnabled) }
     var batteryThreshold by remember { mutableStateOf(securePreferences.lowBatteryThreshold.toFloat()) }
     var backendUrl by remember { mutableStateOf(securePreferences.backendBaseUrl) }
+    var dashboardUrl by remember { mutableStateOf(securePreferences.dashboardBaseUrl) }
     var savedToast by remember { mutableStateOf(false) }
 
     Scaffold(
@@ -201,9 +202,9 @@ fun SettingsScreen(
                 colors = CardDefaults.cardColors(containerColor = CardSurfaceDark)
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
-                    Text(text = "Backend Cloud URL", fontWeight = FontWeight.Bold, color = TextPrimary, fontSize = 15.sp)
+                    Text(text = "Cloud & Server Endpoints", fontWeight = FontWeight.Bold, color = TextPrimary, fontSize = 15.sp)
                     Text(
-                        text = "For your physical mobile phone, connect to your PC's Wi-Fi IP on port 8088",
+                        text = "Connect to deployed Render/Vercel cloud or local dev servers",
                         color = TextSecondary,
                         fontSize = 12.sp
                     )
@@ -211,7 +212,17 @@ fun SettingsScreen(
                     OutlinedTextField(
                         value = backendUrl,
                         onValueChange = { backendUrl = it },
-                        label = { Text("API Base URL") },
+                        label = { Text("Backend API Base URL (Render)") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    OutlinedTextField(
+                        value = dashboardUrl,
+                        onValueChange = { dashboardUrl = it },
+                        label = { Text("Web Dashboard Base URL (Vercel)") },
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth()
                     )
@@ -220,19 +231,34 @@ fun SettingsScreen(
 
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
                         OutlinedButton(
-                            onClick = { backendUrl = "http://192.168.29.112:8088" },
-                            modifier = Modifier.weight(1f)
+                            onClick = {
+                                backendUrl = "https://maaya-nrba.onrender.com"
+                                dashboardUrl = "https://maaya-henna.vercel.app"
+                            },
+                            modifier = Modifier.weight(1.2f)
                         ) {
-                            Text("Use Wi-Fi IP", fontSize = 11.sp)
+                            Text("Use Render/Vercel", fontSize = 10.sp)
                         }
                         OutlinedButton(
-                            onClick = { backendUrl = "http://10.0.2.2:8088" },
-                            modifier = Modifier.weight(1f)
+                            onClick = {
+                                backendUrl = "http://192.168.29.112:8088"
+                                dashboardUrl = "http://192.168.29.112:5173"
+                            },
+                            modifier = Modifier.weight(0.9f)
                         ) {
-                            Text("Use Emulator", fontSize = 11.sp)
+                            Text("Local Wi-Fi", fontSize = 10.sp)
+                        }
+                        OutlinedButton(
+                            onClick = {
+                                backendUrl = "http://10.0.2.2:8088"
+                                dashboardUrl = "http://10.0.2.2:5173"
+                            },
+                            modifier = Modifier.weight(0.9f)
+                        ) {
+                            Text("Emulator", fontSize = 10.sp)
                         }
                     }
                 }
@@ -249,6 +275,7 @@ fun SettingsScreen(
                     securePreferences.isLowBatteryEscalationEnabled = isBatteryAlertEnabled
                     securePreferences.lowBatteryThreshold = batteryThreshold.toInt()
                     securePreferences.backendBaseUrl = backendUrl.trimEnd('/')
+                    securePreferences.dashboardBaseUrl = dashboardUrl.trimEnd('/')
                     savedToast = true
                 },
                 modifier = Modifier
