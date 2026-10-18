@@ -34,6 +34,13 @@ const wsServer = new EmergencyWsServer(server);
 app.use('/api/incidents', createIncidentRouter(wsServer));
 app.use('/api/saferide', createSafeRideRouter());
 
+// Seamless Redirect: If emergency SMS link points to backend, redirect to Vercel dashboard
+app.get('/emergency/:incidentId', (req, res) => {
+  const dashboardUrl = (process.env.DASHBOARD_URL || 'https://maaya-henna.vercel.app').replace(/\/+$/, '');
+  const query = req.url.includes('?') ? req.url.substring(req.url.indexOf('?')) : '';
+  res.redirect(302, `${dashboardUrl}/emergency/${req.params.incidentId}${query}`);
+});
+
 app.get('/api/health', (_req, res) => {
   res.json({
     status: 'HEALTHY',
