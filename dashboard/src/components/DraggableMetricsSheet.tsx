@@ -363,64 +363,66 @@ export const DraggableMetricsSheet: React.FC<Props> = ({
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
-              {/* Live Video Frame */}
-              <div className="relative rounded-2xl overflow-hidden bg-black aspect-[4/3] shadow-md group">
-                <img
-                  src={liveFrame || '/dashcam_stream.jpg'}
-                  alt="Live Camera Feed"
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute top-2 left-2 px-2 py-0.5 bg-rose-600/95 text-white rounded-md text-[10px] font-bold tracking-wider flex items-center space-x-1 shadow">
-                  <span>▶ LIVE</span>
+            {/* Live Video Frame - Full Width & Increased Height */}
+            <div className="relative w-full rounded-2xl overflow-hidden bg-black aspect-[16/10] sm:aspect-video shadow-md group">
+              <img
+                src={liveFrame || '/dashcam_stream.jpg'}
+                alt="Live Camera Feed"
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute top-2.5 left-2.5 px-2.5 py-1 bg-rose-600/95 text-white rounded-md text-[10px] font-bold tracking-wider flex items-center space-x-1.5 shadow">
+                <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+                <span>LIVE</span>
+              </div>
+              <button
+                onClick={() => setFullscreenVideo(true)}
+                className="absolute top-2.5 right-2.5 p-1.5 bg-black/50 hover:bg-black/75 text-white rounded-lg transition"
+                title="Fullscreen"
+              >
+                <Maximize2 className="w-4 h-4" />
+              </button>
+              <div className="absolute bottom-2 left-2.5 px-2 py-0.5 bg-black/60 backdrop-blur-xs rounded text-[9.5px] font-mono text-white/90 drop-shadow">
+                2025-03-15 21:41:52 • CAM-01 FRONT
+              </div>
+            </div>
+
+            {/* Audio & Download Controls below Video */}
+            <div className="grid grid-cols-2 gap-3 mt-3">
+              {/* Audio Recording */}
+              <div className="bg-[#F8FAFC] border border-slate-100 rounded-2xl p-2.5 flex flex-col justify-between">
+                <div className="flex items-center space-x-2">
+                  <div className="w-7 h-7 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 shrink-0">
+                    <Mic className="w-3.5 h-3.5" />
+                  </div>
+                  <div className="text-[11.5px] font-bold text-slate-800">Audio Recording</div>
                 </div>
-                <button
-                  onClick={() => setFullscreenVideo(true)}
-                  className="absolute top-2 right-2 p-1.5 bg-black/50 hover:bg-black/75 text-white rounded-lg transition"
-                >
-                  <Maximize2 className="w-3.5 h-3.5" />
-                </button>
-                <div className="absolute bottom-1.5 left-2 text-[9px] font-mono text-white/90 drop-shadow">
-                  2025-03-15 21:41:52
+                <div className="flex items-center justify-center space-x-1 my-2 h-7 px-1">
+                  <div className="w-1 bg-purple-400 h-3 rounded-full animate-audio-1" />
+                  <div className="w-1 bg-purple-500 h-5 rounded-full animate-audio-2" />
+                  <div className="w-1 bg-purple-600 h-6 rounded-full animate-audio-3" />
+                  <div className="w-1 bg-purple-500 h-4 rounded-full animate-audio-4" />
+                  <div className="w-1 bg-purple-600 h-7 rounded-full animate-audio-5" />
+                  <div className="w-1 bg-purple-400 h-3 rounded-full animate-audio-2" />
+                  <div className="w-1 bg-purple-500 h-5 rounded-full animate-audio-3" />
+                  <div className="w-1 bg-purple-600 h-4 rounded-full animate-audio-1" />
+                  <div className="w-1 bg-purple-400 h-2 rounded-full animate-audio-4" />
+                </div>
+                <div className="text-[10px] text-right font-mono text-slate-500">
+                  {durationText}
                 </div>
               </div>
 
-              {/* Audio & Download */}
-              <div className="flex flex-col justify-between space-y-2">
-                <div className="bg-[#F8FAFC] border border-slate-100 rounded-2xl p-2.5 flex-1 flex flex-col justify-between">
-                  <div className="flex items-center space-x-2">
-                    <div className="w-7 h-7 rounded-full bg-purple-100 flex items-center justify-center text-purple-600">
-                      <Mic className="w-3.5 h-3.5" />
-                    </div>
-                    <div className="text-[11.5px] font-bold text-slate-800">Audio Recording</div>
-                  </div>
-                  <div className="flex items-center justify-center space-x-1 my-2 h-7 px-1">
-                    <div className="w-1 bg-purple-400 h-3 rounded-full animate-audio-1" />
-                    <div className="w-1 bg-purple-500 h-5 rounded-full animate-audio-2" />
-                    <div className="w-1 bg-purple-600 h-6 rounded-full animate-audio-3" />
-                    <div className="w-1 bg-purple-500 h-4 rounded-full animate-audio-4" />
-                    <div className="w-1 bg-purple-600 h-7 rounded-full animate-audio-5" />
-                    <div className="w-1 bg-purple-400 h-3 rounded-full animate-audio-2" />
-                    <div className="w-1 bg-purple-500 h-5 rounded-full animate-audio-3" />
-                    <div className="w-1 bg-purple-600 h-4 rounded-full animate-audio-1" />
-                    <div className="w-1 bg-purple-400 h-2 rounded-full animate-audio-4" />
-                  </div>
-                  <div className="text-[10px] text-right font-mono text-slate-500">
-                    {durationText}
-                  </div>
+              {/* Download Button */}
+              <button
+                onClick={onDownloadVideo}
+                className="w-full h-full min-h-[90px] py-2.5 px-3 bg-[#EFF6FF] hover:bg-[#DBEAFE] border border-[#BFDBFE] rounded-2xl text-blue-700 flex flex-col items-center justify-center transition shadow-sm active:scale-95"
+              >
+                <div className="w-7 h-7 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 mb-1">
+                  <Download className="w-3.5 h-3.5" />
                 </div>
-
-                <button
-                  onClick={onDownloadVideo}
-                  className="w-full py-2.5 px-3 bg-[#EFF6FF] hover:bg-[#DBEAFE] border border-[#BFDBFE] rounded-xl text-blue-700 flex flex-col items-center justify-center transition shadow-sm active:scale-95"
-                >
-                  <div className="flex items-center space-x-1.5">
-                    <Download className="w-3.5 h-3.5 text-blue-600" />
-                    <span className="text-[12px] font-bold">Download Video</span>
-                  </div>
-                  <span className="text-[9.5px] text-slate-500 mt-0.5">Saved in secure cloud storage</span>
-                </button>
-              </div>
+                <div className="text-[12px] font-bold">Download Video</div>
+                <span className="text-[9.5px] text-slate-500 mt-0.5 text-center leading-tight">Saved in secure cloud</span>
+              </button>
             </div>
           </div>
         </div>
