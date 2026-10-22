@@ -1,11 +1,11 @@
-import React, { useEffect, useState, useMemo, useRef } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import L from 'leaflet';
 import { LiveEmergencyMap } from './components/LiveEmergencyMap';
 import { FloatingIncidentHeader } from './components/FloatingIncidentHeader';
 import { DraggableMetricsSheet } from './components/DraggableMetricsSheet';
 import { fetchIncident, fetchAllIncidents, resolveIncident, IncidentData } from './services/api';
 import { EmergencyWsClient } from './services/websocket';
-import { Shield, PhoneCall, CheckCircle, Wifi, Battery, Signal, Eye, RotateCcw } from 'lucide-react';
+import { PhoneCall } from 'lucide-react';
 
 export default function App() {
   const [incident, setIncident] = useState<IncidentData | null>(null);
@@ -15,7 +15,7 @@ export default function App() {
   const [audioLevel, setAudioLevel] = useState<number>(45);
   const [recordingUrl, setRecordingUrl] = useState<string | null>(null);
 
-  // Bottom Sheet expansion state
+  // Bottom Sheet expansion state (defaults to collapsed 15% height)
   const [isSheetExpanded, setIsSheetExpanded] = useState(false);
 
   // Call Emergency Service modal
@@ -34,7 +34,7 @@ export default function App() {
   const token = urlParams.get('token') || 'demo-token';
 
   // Live Incident Duration State (ticks up every second)
-  const [durationText, setDurationText] = useState('00:12:36');
+  const [durationText, setDurationText] = useState('00:01:53');
 
   useEffect(() => {
     let wsClient: EmergencyWsClient | null = null;
@@ -68,8 +68,7 @@ export default function App() {
           if ((data as any).lastLiveFrame) setLiveFrame((data as any).lastLiveFrame);
           if ((data as any).lastAudioLevel != null) setAudioLevel((data as any).lastAudioLevel);
         } else {
-          // Fallback realistic incident matching the exact specification and mockup:
-          // Incident ID: #MAA-2025-0315-001, Noida Sector 62
+          // Fallback realistic incident matching the exact specification and mockup
           const defaultIncident: IncidentData = {
             incidentId: 'MAA-2025-0315-001',
             triggerType: 'MANUAL_IN_APP',
@@ -84,7 +83,7 @@ export default function App() {
             dashboardAccessToken: token,
             dashboardViewerUrl: window.location.href,
             streamToken: 'demo-active-token',
-            createdAt: Date.now() - 756000, // 12 mins 36 seconds ago
+            createdAt: Date.now() - 113000, // 1 min 53 seconds ago
           };
           setIncident(defaultIncident);
         }
@@ -142,7 +141,7 @@ export default function App() {
     const timerInterval = setInterval(() => {
       setIncident((prev) => {
         if (!prev) return null;
-        const start = prev.createdAt || (Date.now() - 756000);
+        const start = prev.createdAt || (Date.now() - 113000);
         const end = prev.resolvedAt || Date.now();
         const diffSecs = Math.max(0, Math.floor((end - start) / 1000));
         const hrs = Math.floor(diffSecs / 3600);
@@ -205,22 +204,9 @@ export default function App() {
     document.body.removeChild(link);
   };
 
-  // Resolve emergency toggle for responder verification
-  const handleToggleResolve = async () => {
-    if (!incident) return;
-    if (incident.status === 'ACTIVE') {
-      try {
-        await resolveIncident(incident.incidentId, 'Resolved via Emergency Web Dashboard');
-      } catch (_) {}
-      setIncident((prev) => (prev ? { ...prev, status: 'RESOLVED', resolvedAt: Date.now() } : null));
-    } else {
-      setIncident((prev) => (prev ? { ...prev, status: 'ACTIVE', resolvedAt: undefined } : null));
-    }
-  };
-
   if (loading && !incident) {
     return (
-      <div className="min-h-screen bg-[#EAF6FF] flex items-center justify-center p-6 text-center">
+      <div className="fixed inset-0 bg-[#EAF6FF] flex items-center justify-center p-6 text-center">
         <div className="flex flex-col items-center space-y-4">
           <div className="w-12 h-12 rounded-full border-4 border-[#7552E8] border-t-transparent animate-spin" />
           <p className="text-sm font-bold text-[#17233F]">Loading Maaya Emergency Live Dashboard...</p>
@@ -232,75 +218,47 @@ export default function App() {
   const currentStatus = incident?.status || 'ACTIVE';
 
   return (
-    <div className="min-h-screen bg-[#EAF6FF] flex justify-center items-center sm:p-4 select-none">
-      {/* Mobile Device Frame Container (Width 390px - 440px on desktop, 100% on mobile) */}
-      <div className="relative w-full sm:max-w-[430px] h-[100dvh] sm:h-[890px] sm:max-h-[92vh] bg-white sm:rounded-[44px] shadow-[0_20px_60px_rgba(15,23,42,0.18)] overflow-hidden flex flex-col border sm:border-slate-300/80">
-        {/* iOS-Style Status Bar (9:41, Cellular, Wifi, Battery) */}
-        <div className="absolute top-0 inset-x-0 h-10 px-6 flex items-center justify-between text-slate-900 text-xs font-semibold z-20 pointer-events-none">
-          <span className="font-bold tracking-tight text-[13px]">9:41</span>
-          <div className="flex items-center space-x-1.5 text-slate-800">
-            <Signal className="w-3.5 h-3.5" />
-            <Wifi className="w-3.5 h-3.5" />
-            <Battery className="w-4 h-4 fill-slate-800" />
-          </div>
-        </div>
+    // Full Viewport 100% Height & Width (Zero space above or below!)
+    <div className="fixed inset-0 w-full h-[100dvh] overflow-hidden bg-slate-100 flex flex-col select-none">
+      {/* Floating Maaya Logo & Incident Status Header Card & 3 Circular Buttons */}
+      <FloatingIncidentHeader
+        incidentId={incident?.incidentId || 'MAA-2025-0315-001'}
+        status={currentStatus}
+        durationText={durationText}
+        onOpenGoogleMaps={handleOpenGoogleMaps}
+        onShowFullPath={handleShowFullPath}
+        onRecenter={handleRecenter}
+      />
 
-        {/* Floating Maaya Logo & Incident Status Header Card & 3 Circular Buttons */}
-        <FloatingIncidentHeader
-          incidentId={incident?.incidentId || 'MAA-2025-0315-001'}
+      {/* Full-Screen Interactive Leaflet Map (Covers 100% of background, remaining 85% above sheet) */}
+      <div className="relative w-full h-full flex-1">
+        <LiveEmergencyMap
+          latitude={incident?.currentLatitude || 28.6280}
+          longitude={incident?.currentLongitude || 77.3780}
+          history={locationHistory}
           status={currentStatus}
-          durationText={durationText}
-          onOpenGoogleMaps={handleOpenGoogleMaps}
-          onShowFullPath={handleShowFullPath}
-          onRecenter={handleRecenter}
+          onMapReady={(map) => {
+            mapInstanceRef.current = map;
+          }}
         />
-
-        {/* Full-Screen Interactive Leaflet Map */}
-        <div className="relative flex-1 w-full h-full">
-          <LiveEmergencyMap
-            latitude={incident?.currentLatitude || 28.6280}
-            longitude={incident?.currentLongitude || 77.3780}
-            history={locationHistory}
-            status={currentStatus}
-            onMapReady={(map) => {
-              mapInstanceRef.current = map;
-            }}
-          />
-        </div>
-
-        {/* Draggable Live Metrics Panel & Video/Audio Bottom Sheet */}
-        <DraggableMetricsSheet
-          heartRate={incident?.heartRateBpm ?? 78}
-          spo2={98}
-          battery={incident?.batteryPercentage ?? 67}
-          stressLevel="Low"
-          durationText={durationText}
-          isRecording={currentStatus === 'ACTIVE'}
-          recordingUrl={recordingUrl || incident?.recordingUrl || null}
-          liveFrame={liveFrame}
-          audioLevel={audioLevel}
-          onCallService={handleCallService}
-          onDownloadVideo={handleDownloadVideo}
-          isExpanded={isSheetExpanded}
-          onToggleExpanded={() => setIsSheetExpanded((prev) => !prev)}
-        />
-
       </div>
 
-      {/* Responder Status Switcher (Outside Phone Frame for Testing/Admin) */}
-      <div className="hidden sm:block fixed bottom-3 left-1/2 -translate-x-1/2 z-30">
-        <button
-          onClick={handleToggleResolve}
-          className={`px-4 py-1.5 rounded-full text-xs font-bold border shadow-md transition ${
-            currentStatus === 'ACTIVE'
-              ? 'bg-white text-rose-600 border-rose-200 hover:bg-rose-50'
-              : 'bg-white text-emerald-600 border-emerald-200 hover:bg-emerald-50'
-          }`}
-          title="Toggle between Emergency Active and Emergency Resolved status"
-        >
-          Responder Mode: {currentStatus === 'ACTIVE' ? 'Simulate Resolve Incident' : 'Reactivate Emergency'}
-        </button>
-      </div>
+      {/* Draggable Bottom Sheet: Collapsed at 15% bottom showing health metrics, expands on swipe */}
+      <DraggableMetricsSheet
+        heartRate={incident?.heartRateBpm ?? 78}
+        spo2={98}
+        battery={incident?.batteryPercentage ?? 67}
+        stressLevel="Low"
+        durationText={durationText}
+        isRecording={currentStatus === 'ACTIVE'}
+        recordingUrl={recordingUrl || incident?.recordingUrl || null}
+        liveFrame={liveFrame}
+        audioLevel={audioLevel}
+        onCallService={handleCallService}
+        onDownloadVideo={handleDownloadVideo}
+        isExpanded={isSheetExpanded}
+        onToggleExpanded={() => setIsSheetExpanded((prev) => !prev)}
+      />
 
       {/* Emergency Call Modal */}
       {activeCallModal && (
