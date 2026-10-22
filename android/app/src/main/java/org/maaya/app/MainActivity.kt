@@ -4,11 +4,12 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import org.maaya.app.ui.navigation.MaayaNavGraph
-import org.maaya.app.ui.theme.DarkNavyBackground
 import org.maaya.app.ui.theme.MaayaTheme
+import org.maaya.app.ui.theme.SkyBlueBackground
 
 class MainActivity : ComponentActivity() {
 
@@ -22,7 +23,7 @@ class MainActivity : ComponentActivity() {
             MaayaTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
-                    color = DarkNavyBackground
+                    color = MaterialTheme.colorScheme.background
                 ) {
                     MaayaNavGraph(container = container)
                 }

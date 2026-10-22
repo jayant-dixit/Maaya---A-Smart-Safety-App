@@ -6,7 +6,7 @@ sealed class Screen(val route: String, val title: String) {
     object ActiveSos : Screen("active_sos", "Emergency SOS")
     object TrustedContacts : Screen("contacts", "Trusted Contacts")
     object Smartwatch : Screen("smartwatch", "Wearable Health")
-    object SafeRide : Screen("safe_ride", "Safe Ride")
+    object SafeRide : Screen("safe_ride", "Cab Escort")
     object IncidentHistory : Screen("history", "Incident History")
     object Settings : Screen("settings", "Security & Settings")
 }

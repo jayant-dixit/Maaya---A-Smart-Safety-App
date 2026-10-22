@@ -76,7 +76,16 @@ fun OnboardingScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(DarkNavyBackground)
+            .background(
+                Brush.verticalGradient(
+                    listOf(
+                        SkyBlueGradientTop,
+                        SkyBlueGradientMid,
+                        SkyBlueBackground,
+                        Color.White
+                    )
+                )
+            )
             .padding(24.dp)
             .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -116,8 +125,10 @@ fun OnboardingScreen(
         // Profile Card
         Card(
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = CardSurfaceDark)
+            shape = RoundedCornerShape(20.dp),
+            colors = CardDefaults.cardColors(containerColor = SurfaceWhite),
+            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+            border = CardDefaults.outlinedCardBorder().copy(brush = androidx.compose.ui.graphics.SolidColor(BorderSubtle))
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(
@@ -169,8 +180,10 @@ fun OnboardingScreen(
         // Permissions Card
         Card(
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = CardSurfaceDark)
+            shape = RoundedCornerShape(20.dp),
+            colors = CardDefaults.cardColors(containerColor = SurfaceWhite),
+            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+            border = CardDefaults.outlinedCardBorder().copy(brush = androidx.compose.ui.graphics.SolidColor(BorderSubtle))
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Row(

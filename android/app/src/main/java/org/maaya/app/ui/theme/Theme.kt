@@ -2,28 +2,29 @@ package org.maaya.app.ui.theme
 
 import android.app.Activity
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
-private val DarkColorScheme = darkColorScheme(
-    primary = CrimsonRed,
-    onPrimary = TextPrimary,
-    primaryContainer = DarkCrimson,
-    onPrimaryContainer = TextPrimary,
+private val LightColorScheme = lightColorScheme(
+    primary = PrimarySkyBlue,
+    onPrimary = Color.White,
+    primaryContainer = SkyBlueLight,
+    onPrimaryContainer = PrimarySkyBlueDark,
     secondary = AccentPurple,
-    onSecondary = TextPrimary,
-    background = DarkNavyBackground,
+    onSecondary = Color.White,
+    background = SkyBlueBackground,
     onBackground = TextPrimary,
-    surface = CardSurfaceDark,
+    surface = SurfaceWhite,
     onSurface = TextPrimary,
     surfaceVariant = CardSurfaceElevated,
     onSurfaceVariant = TextSecondary,
     error = CrimsonRed,
-    onError = TextPrimary
+    onError = Color.White
 )
 
 @Composable
@@ -33,15 +34,17 @@ fun MaayaTheme(content: @Composable () -> Unit) {
         SideEffect {
             val window = (view.context as? Activity)?.window
             if (window != null) {
-                window.statusBarColor = DarkNavyBackground.toArgb()
-                window.navigationBarColor = DarkNavyBackground.toArgb()
-                WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = false
+                window.statusBarColor = SkyBlueGradientTop.toArgb()
+                window.navigationBarColor = SurfaceWhite.toArgb()
+                val insetsController = WindowCompat.getInsetsController(window, view)
+                insetsController.isAppearanceLightStatusBars = true
+                insetsController.isAppearanceLightNavigationBars = true
             }
         }
     }
 
     MaterialTheme(
-        colorScheme = DarkColorScheme,
+        colorScheme = LightColorScheme,
         typography = Typography,
         content = content
     )

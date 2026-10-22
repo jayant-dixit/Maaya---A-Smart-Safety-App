@@ -33,30 +33,17 @@ class EmergencySosForegroundService : Service() {
         val notification = buildEmergencyNotification(incidentId)
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            var serviceTypes = 0
+            var serviceTypes = ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-                serviceTypes = serviceTypes or ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC
-            }
-            val hasLocation = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
-                    ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
-            if (hasLocation) {
-                serviceTypes = serviceTypes or ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION
-            }
-            val hasCamera = ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
-            if (hasCamera) {
-                serviceTypes = serviceTypes or ServiceInfo.FOREGROUND_SERVICE_TYPE_CAMERA
-            }
-            val hasMic = ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED
-            if (hasMic) {
-                serviceTypes = serviceTypes or ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE
+                val hasLocation = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
+                        ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
+                if (hasLocation) {
+                    serviceTypes = serviceTypes or ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION
+                }
             }
 
             try {
-                if (serviceTypes != 0) {
-                    startForeground(NOTIFICATION_ID, notification, serviceTypes)
-                } else {
-                    startForeground(NOTIFICATION_ID, notification)
-                }
+                startForeground(NOTIFICATION_ID, notification, serviceTypes)
             } catch (e: Exception) {
                 Log.e("EmergencySosService", "Error starting foreground with specified types, falling back", e)
                 try {
@@ -70,7 +57,11 @@ class EmergencySosForegroundService : Service() {
                 }
             }
         } else {
-            startForeground(NOTIFICATION_ID, notification)
+            try {
+                startForeground(NOTIFICATION_ID, notification)
+            } catch (e: Exception) {
+                Log.e("EmergencySosService", "Failed to start foreground notification", e)
+            }
         }
 
         return START_STICKY
@@ -105,22 +96,30 @@ class EmergencySosForegroundService : Service() {
         const val EXTRA_INCIDENT_ID = "extra_incident_id"
 
         fun start(context: Context, incidentId: String) {
-            val intent = Intent(context, EmergencySosForegroundService::class.java).apply {
-                action = ACTION_START_SOS
-                putExtra(EXTRA_INCIDENT_ID, incidentId)
-            }
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                context.startForegroundService(intent)
-            } else {
-                context.startService(intent)
+            try {
+                val intent = Intent(context, EmergencySosForegroundService::class.java).apply {
+                    action = ACTION_START_SOS
+                    putExtra(EXTRA_INCIDENT_ID, incidentId)
+                }
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    context.startForegroundService(intent)
+                } else {
+                    context.startService(intent)
+                }
+            } catch (e: Exception) {
+                Log.e("EmergencySosService", "Could not start EmergencySosForegroundService safely", e)
             }
         }
 
         fun stop(context: Context) {
-            val intent = Intent(context, EmergencySosForegroundService::class.java).apply {
-                action = ACTION_STOP_SOS
+            try {
+                val intent = Intent(context, EmergencySosForegroundService::class.java).apply {
+                    action = ACTION_STOP_SOS
+                }
+                context.startService(intent)
+            } catch (e: Exception) {
+                Log.e("EmergencySosService", "Could not stop EmergencySosForegroundService safely", e)
             }
-            context.startService(intent)
         }
     }
 }

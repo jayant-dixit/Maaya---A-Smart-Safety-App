@@ -15,6 +15,7 @@ class SafeRideRepository(
     private val apiService: MaayaApiService
 ) {
     val activeRideFlow: Flow<SafeRideSession?> = safeRideDao.getActiveRideFlow().map { it?.toDomain() }
+    val allRidesFlow: Flow<List<SafeRideSession>> = safeRideDao.getAllRidesFlow().map { list -> list.map { it.toDomain() } }
 
     suspend fun getActiveRide(): SafeRideSession? {
         return safeRideDao.getActiveRide()?.toDomain()
@@ -27,7 +28,9 @@ class SafeRideRepository(
         destinationLatitude: Double?,
         destinationLongitude: Double?,
         expectedArrivalMinutes: Int,
-        checkInIntervalMinutes: Int
+        checkInIntervalMinutes: Int,
+        cabPhotoUri: String? = null,
+        cabModel: String? = null
     ): SafeRideSession {
         val now = System.currentTimeMillis()
         val rideId = UUID.randomUUID().toString()
@@ -43,7 +46,9 @@ class SafeRideRepository(
             startedAt = now,
             lastCheckInAt = now,
             isCompleted = false,
-            isEscalatedToSos = false
+            isEscalatedToSos = false,
+            cabPhotoUri = cabPhotoUri,
+            cabModel = cabModel
         )
         safeRideDao.insertOrUpdateRide(entity)
 
@@ -102,6 +107,8 @@ class SafeRideRepository(
         startedAt = startedAt,
         lastCheckInAt = lastCheckInAt,
         isCompleted = isCompleted,
-        isEscalatedToSos = isEscalatedToSos
+        isEscalatedToSos = isEscalatedToSos,
+        cabPhotoUri = cabPhotoUri,
+        cabModel = cabModel
     )
 }

@@ -75,5 +75,7 @@ data class SafeRideSession(
     val startedAt: Long,
     val lastCheckInAt: Long,
     val isCompleted: Boolean = false,
-    val isEscalatedToSos: Boolean = false
+    val isEscalatedToSos: Boolean = false,
+    val cabPhotoUri: String? = null,
+    val cabModel: String? = null
 )

@@ -76,6 +76,9 @@ interface SafeRideDao {
     @Query("SELECT * FROM safe_ride_sessions WHERE isCompleted = 0 LIMIT 1")
     suspend fun getActiveRide(): SafeRideEntity?
 
+    @Query("SELECT * FROM safe_ride_sessions ORDER BY startedAt DESC")
+    fun getAllRidesFlow(): Flow<List<SafeRideEntity>>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertOrUpdateRide(ride: SafeRideEntity)
 

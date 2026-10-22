@@ -42,7 +42,7 @@ class Converters {
         HealthMetricEntity::class,
         SafeRideEntity::class
     ],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 @TypeConverters(Converters::class)

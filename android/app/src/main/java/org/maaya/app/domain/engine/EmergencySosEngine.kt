@@ -80,105 +80,142 @@ class EmergencySosEngine(
 
     private fun launchActiveEmergency(triggerType: SosTriggerType) {
         scope.launch {
-            val incidentId = UUID.randomUUID().toString()
-            activeIncidentId = incidentId
+            try {
+                val incidentId = UUID.randomUUID().toString()
+                activeIncidentId = incidentId
 
-            // 1. Get initial location with fallback
-            val location = locationTracker.getCurrentHighAccuracyLocation()
-                ?: locationTracker.getLastKnownLocation()
-            val lat = location?.latitude ?: 0.0
-            val lon = location?.longitude ?: 0.0
-            val accuracy = location?.accuracy ?: 100f
+                // 1. Get initial location with fallback
+                val location = try {
+                    locationTracker.getCurrentHighAccuracyLocation()
+                        ?: locationTracker.getLastKnownLocation()
+                } catch (e: Exception) {
+                    Log.w("SosEngine", "Failed to retrieve initial location fix", e)
+                    null
+                }
+                val lat = location?.latitude ?: 0.0
+                val lon = location?.longitude ?: 0.0
+                val accuracy = location?.accuracy ?: 100f
 
-            // 2. CRITICAL: Persist locally BEFORE network calls
-            val localIncident = incidentRepository.createAndPersistIncidentLocally(
-                id = incidentId,
-                triggerType = triggerType,
-                latitude = lat,
-                longitude = lon,
-                accuracy = accuracy,
-                notes = "Triggered by ${triggerType.name}"
-            )
-
-            // 3. Start high-priority Foreground Service
-            EmergencySosForegroundService.start(context, incidentId)
-
-            _engineState.value = SosEngineState.Active(
-                incident = localIncident,
-                isSmsDispatched = false,
-                isMediaStreaming = false,
-                currentLatitude = lat,
-                currentLongitude = lon
-            )
-
-            // 4. Concurrently & Independently: Server Sync, SMS Dispatch, Media Streaming, and Location tracking
-
-            // A) Backend Sync (Non-blocking)
-            val syncJob = async {
-                incidentRepository.syncIncidentWithServer(
-                    incidentId = incidentId,
-                    triggerType = triggerType,
-                    latitude = lat,
-                    longitude = lon,
-                    accuracy = accuracy
-                )
-            }
-
-            // B) SMS Dispatch (Independent)
-            launch {
-                try {
-                    val priorityContacts = contactRepository.getPrioritySmsContacts()
-                    val dashboardBaseUrl = securePreferences.dashboardBaseUrl
-                    val emergencyUrl = "$dashboardBaseUrl/emergency/$incidentId?incidentId=$incidentId"
-                    val result = smsDispatcher.dispatchEmergencySms(
-                        contacts = priorityContacts,
-                        userName = securePreferences.userName,
+                // 2. CRITICAL: Persist locally BEFORE network calls
+                val localIncident = try {
+                    incidentRepository.createAndPersistIncidentLocally(
+                        id = incidentId,
+                        triggerType = triggerType,
                         latitude = lat,
                         longitude = lon,
-                        dashboardUrl = emergencyUrl
+                        accuracy = accuracy,
+                        notes = "Triggered by ${triggerType.name}"
                     )
-                    if (result.isSuccess) {
-                        incidentRepository.updateSmsDispatched(incidentId, true)
-                        updateActiveState { it.copy(isSmsDispatched = true) }
-                    }
                 } catch (e: Exception) {
-                    Log.e("SosEngine", "SMS dispatch failed independently", e)
+                    Log.e("SosEngine", "Failed to persist incident locally, using fallback", e)
+                    EmergencyIncident(
+                        id = incidentId,
+                        startedAt = System.currentTimeMillis(),
+                        triggerType = triggerType,
+                        status = SosStatus.ACTIVE,
+                        initialLatitude = lat,
+                        initialLongitude = lon,
+                        currentLatitude = lat,
+                        currentLongitude = lon,
+                        accuracyMeters = accuracy,
+                        notes = "Triggered by ${triggerType.name}"
+                    )
                 }
-            }
 
-            // C) Media Streaming (Independent)
-            launch {
+                // 3. Start high-priority Foreground Service safely
                 try {
-                    mediaProvider.initialize()
-                    val authKey = UUID.randomUUID().toString()
-                    val mediaResult = mediaProvider.startStream(
-                        sessionId = incidentId,
-                        authKey = authKey,
-                        constraints = MediaConstraints(enableVideo = true, enableAudio = true)
-                    )
-                    if (mediaResult.isSuccess) {
-                        incidentRepository.updateMediaStreamingState(incidentId, true, incidentId)
-                        updateActiveState { it.copy(isMediaStreaming = true) }
+                    EmergencySosForegroundService.start(context, incidentId)
+                } catch (e: Exception) {
+                    Log.e("SosEngine", "Failed to start EmergencySosForegroundService", e)
+                }
+
+                _engineState.value = SosEngineState.Active(
+                    incident = localIncident,
+                    isSmsDispatched = false,
+                    isMediaStreaming = false,
+                    currentLatitude = lat,
+                    currentLongitude = lon
+                )
+
+                // 4. Concurrently & Independently: Server Sync, SMS Dispatch, Media Streaming, and Location tracking
+
+                // A) Backend Sync (Non-blocking)
+                val syncJob = async {
+                    try {
+                        incidentRepository.syncIncidentWithServer(
+                            incidentId = incidentId,
+                            triggerType = triggerType,
+                            latitude = lat,
+                            longitude = lon,
+                            accuracy = accuracy
+                        )
+                    } catch (e: Exception) {
+                        Result.failure<EmergencyIncident>(e)
+                    }
+                }
+
+                // B) SMS Dispatch (Independent)
+                launch {
+                    try {
+                        val priorityContacts = contactRepository.getPrioritySmsContacts()
+                        val dashboardBaseUrl = securePreferences.dashboardBaseUrl
+                        val emergencyUrl = "$dashboardBaseUrl/emergency/$incidentId?incidentId=$incidentId"
+                        val result = smsDispatcher.dispatchEmergencySms(
+                            contacts = priorityContacts,
+                            userName = securePreferences.userName,
+                            latitude = lat,
+                            longitude = lon,
+                            dashboardUrl = emergencyUrl
+                        )
+                        if (result.isSuccess) {
+                            incidentRepository.updateSmsDispatched(incidentId, true)
+                            updateActiveState { it.copy(isSmsDispatched = true) }
+                        }
+                    } catch (e: Exception) {
+                        Log.e("SosEngine", "SMS dispatch failed independently", e)
+                    }
+                }
+
+                // C) Media Streaming (Independent)
+                launch {
+                    try {
+                        mediaProvider.initialize()
+                        val authKey = UUID.randomUUID().toString()
+                        val mediaResult = mediaProvider.startStream(
+                            sessionId = incidentId,
+                            authKey = authKey,
+                            constraints = MediaConstraints(enableVideo = true, enableAudio = true)
+                        )
+                        if (mediaResult.isSuccess) {
+                            incidentRepository.updateMediaStreamingState(incidentId, true, incidentId)
+                            updateActiveState { it.copy(isMediaStreaming = true) }
+                        }
+                    } catch (e: Exception) {
+                        Log.e("SosEngine", "Media streaming failed independently", e)
+                    }
+                }
+
+                // D) Continuous GPS tracking loop
+                try {
+                    startContinuousLocationLoop(incidentId)
+                } catch (e: Exception) {
+                    Log.e("SosEngine", "Location loop failed to start", e)
+                }
+
+                // Await sync completion to update token
+                try {
+                    val syncResult = syncJob.await()
+                    if (syncResult.isSuccess) {
+                        val synced = syncResult.getOrNull()
+                        if (synced != null) {
+                            updateActiveState { it.copy(incident = synced) }
+                        }
                     }
                 } catch (e: Exception) {
-                    Log.e("SosEngine", "Media streaming failed independently", e)
+                    Log.w("SosEngine", "Sync returned non-fatal error: ${e.message}")
                 }
-            }
-
-            // D) Continuous GPS tracking loop
-            startContinuousLocationLoop(incidentId)
-
-            // Await sync completion to update token
-            try {
-                val syncResult = syncJob.await()
-                if (syncResult.isSuccess) {
-                    val synced = syncResult.getOrNull()
-                    if (synced != null) {
-                        updateActiveState { it.copy(incident = synced) }
-                    }
-                }
-            } catch (e: Exception) {
-                Log.w("SosEngine", "Sync returned non-fatal error: ${e.message}")
+            } catch (t: Throwable) {
+                Log.e("SosEngine", "Fatal crash avoided during launchActiveEmergency", t)
             }
         }
     }

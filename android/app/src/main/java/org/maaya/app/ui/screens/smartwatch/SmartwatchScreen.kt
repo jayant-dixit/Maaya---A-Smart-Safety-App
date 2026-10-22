@@ -45,10 +45,14 @@ fun SmartwatchScreen(
                         Icon(Icons.Default.ArrowBack, contentDescription = "Back")
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = DarkNavyBackground)
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = SkyBlueBackground,
+                    titleContentColor = TextPrimary,
+                    navigationIconContentColor = TextPrimary
+                )
             )
         },
-        containerColor = DarkNavyBackground
+        containerColor = SkyBlueBackground
     ) { padding ->
         Column(
             modifier = Modifier

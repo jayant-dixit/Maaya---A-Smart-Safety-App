@@ -40,16 +40,21 @@ fun IncidentHistoryScreen(
                         Icon(Icons.Default.ArrowBack, contentDescription = "Back")
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = DarkNavyBackground)
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = SkyBlueBackground,
+                    titleContentColor = TextPrimary,
+                    navigationIconContentColor = TextPrimary
+                )
             )
         },
-        containerColor = DarkNavyBackground
+        containerColor = SkyBlueBackground
     ) { padding ->
         if (incidents.isEmpty()) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(padding),
+                    .padding(padding)
+                    .padding(bottom = 80.dp),
                 contentAlignment = Alignment.Center
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -78,7 +83,8 @@ fun IncidentHistoryScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(padding)
-                    .padding(horizontal = 16.dp, vertical = 8.dp)
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                contentPadding = PaddingValues(bottom = 110.dp)
             ) {
                 items(incidents, key = { it.id }) { incident ->
                     Card(

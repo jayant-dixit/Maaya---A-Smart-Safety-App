@@ -46,7 +46,11 @@ fun TrustedContactsScreen(
                         Icon(Icons.Default.ArrowBack, contentDescription = "Back")
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = DarkNavyBackground)
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = SkyBlueBackground,
+                    titleContentColor = TextPrimary,
+                    navigationIconContentColor = TextPrimary
+                )
             )
         },
         floatingActionButton = {
@@ -56,19 +60,21 @@ fun TrustedContactsScreen(
                     newPhone = ""
                     showAddDialog = true
                 },
-                containerColor = CrimsonRed,
-                contentColor = Color.White
+                containerColor = PrimarySkyBlue,
+                contentColor = Color.White,
+                modifier = Modifier.padding(bottom = 80.dp)
             ) {
                 Icon(Icons.Default.Add, contentDescription = "Add Contact")
             }
         },
-        containerColor = DarkNavyBackground
+        containerColor = SkyBlueBackground
     ) { padding ->
         if (contacts.isEmpty()) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(padding),
+                    .padding(padding)
+                    .padding(bottom = 80.dp),
                 contentAlignment = Alignment.Center
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -97,15 +103,18 @@ fun TrustedContactsScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(padding)
-                    .padding(horizontal = 16.dp, vertical = 8.dp)
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                contentPadding = PaddingValues(bottom = 120.dp)
             ) {
                 items(contacts, key = { it.id }) { contact ->
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(vertical = 6.dp),
-                        shape = RoundedCornerShape(14.dp),
-                        colors = CardDefaults.cardColors(containerColor = CardSurfaceDark)
+                        shape = RoundedCornerShape(18.dp),
+                        colors = CardDefaults.cardColors(containerColor = SurfaceWhite),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                        border = CardDefaults.outlinedCardBorder().copy(brush = androidx.compose.ui.graphics.SolidColor(BorderSubtle))
                     ) {
                         Row(
                             modifier = Modifier

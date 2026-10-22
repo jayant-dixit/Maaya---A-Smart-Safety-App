@@ -85,7 +85,7 @@ class SecurePreferences(context: Context) {
         set(value) = prefs.edit().putString(KEY_BONDED_WATCH_MAC, value).apply()
 
     var countdownDurationSeconds: Int
-        get() = prefs.getInt(KEY_COUNTDOWN_SECONDS, 5)
+        get() = prefs.getInt(KEY_COUNTDOWN_SECONDS, 4)
         set(value) = prefs.edit().putInt(KEY_COUNTDOWN_SECONDS, value).apply()
 
     companion object {
